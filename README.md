@@ -16,10 +16,10 @@ This script automatically processes video files placed in the `input` folder and
 
 1.  **Put your video** in the `input` folder (e.g., `interview.mp4`).
 2.  **Create a text file** with the **same name** in the `input` folder (e.g., `interview.txt`).
-3.  **Add timecodes** to the text file (one range per line):
+3.  **Add timecodes** to the text file (one range per line). You can optionally add a title in brackets `[Title]` after `--` to include it in the filename:
     ```text
     00:01:30:15-00:02:00:20
-    1m30s-2m00s
+    00:03:00-00:04:00 --[My Cool Clip]
     ```
 4.  **Run the script**:
     ```bash
@@ -29,12 +29,12 @@ This script automatically processes video files placed in the `input` folder and
 ### Output
 
 The script will generate separate video files for each time range in the `output` folder.
-The filenames will include the original name and the time range.
+The filenames will include the original name, optional title, and the time range.
 
 **Example:**
 *   Input: `input/interview.mp4`
-*   Range: `00:01:30-00:02:00`
-*   Output: `output/interview_00-01-30_00-02-00.mp4`
+*   Range: `00:03:00-00:04:00 --[My Cool Clip]`
+*   Output: `output/interview_My Cool Clip_00-03-00_00-04-00.mp4`
 
 ---
 
@@ -52,10 +52,10 @@ The filenames will include the original name and the time range.
 
 1.  **Поместите ваше видео** в папку `input` (например, `interview.mp4`).
 2.  **Создайте текстовый файл** с **тем же именем** в папке `input` (например, `interview.txt`).
-3.  **Добавьте таймкоды** в текстовый файл (один диапазон на строку):
+3.  **Добавьте таймкоды** в текстовый файл (один диапазон на строку). Вы можете добавить заголовок в квадратных скобках `[Заголовок]` после `--`, чтобы включить его в имя файла:
     ```text
     00:01:30:15-00:02:00:20
-    1m30s-2m00s
+    00:03:00-00:04:00 --[Мой крутой клип]
     ```
 4.  **Запустите скрипт**:
     ```bash
@@ -65,9 +65,9 @@ The filenames will include the original name and the time range.
 ### Результат
 
 Скрипт создаст отдельные видеофайлы для каждого временного диапазона в папке `output`.
-Имена файлов будут включать оригинальное название и временной диапазон.
+Имена файлов будут включать оригинальное название, заголовок (если есть) и временной диапазон.
 
 **Пример:**
 *   Вход: `input/interview.mp4`
-*   Диапазон: `00:01:30-00:02:00`
-*   Выход: `output/interview_00-01-30_00-02-00.mp4`
+*   Диапазон: `00:03:00-00:04:00 --[Мой крутой клип]`
+*   Выход: `output/interview_Мой крутой клип_00-03-00_00-04-00.mp4`

@@ -128,7 +128,7 @@ def parse_ranges(file_path, fps):
     """
     Reads the input file and parses time ranges.
     Format: start-end
-    Returns a list of tuples: (start_seconds, end_seconds, original_line_string)
+    Returns a list of tuples: (start_seconds, end_seconds, original_line_string, title)
     """
     ranges = []
     if not os.path.exists(file_path):
@@ -140,6 +140,16 @@ def parse_ranges(file_path, fps):
             if not line:
                 continue
             
+            title = ""
+            # Extract title from --[Title]
+            match = re.search(r'--\[(.*?)\]', line)
+            if match:
+                title = match.group(1)
+
+            # Ignore comments starting with --
+            if '--' in line:
+                line = line.split('--')[0]
+
             # Normalize dashes
             clean_line = re.sub(r'[\u2013\u2014]', '-', line)
             # Remove spaces
@@ -158,7 +168,7 @@ def parse_ranges(file_path, fps):
             
             if start_sec is not None and end_sec is not None:
                 # Store original strings for filename generation
-                ranges.append((start_sec, end_sec, start_str, end_str))
+                ranges.append((start_sec, end_sec, start_str, end_str, title))
             else:
                 print(f"Failed to parse time in line: {line}")
                 
@@ -180,7 +190,7 @@ def process_video(input_path, ranges):
     
     print(f"Processing {len(ranges)} segments for {filename}...")
     
-    for i, (start, end, start_str, end_str) in enumerate(ranges):
+    for i, (start, end, start_str, end_str, title) in enumerate(ranges):
         duration = end - start
         if duration <= 0:
             print(f"Skipping invalid range: {start} -> {end}")
@@ -190,7 +200,13 @@ def process_video(input_path, ranges):
         safe_start = format_time_for_filename(start_str)
         safe_end = format_time_for_filename(end_str)
         
-        output_filename = f"{name}_{safe_start}_{safe_end}{ext}"
+        if title:
+            # Sanitize title
+            safe_title = re.sub(r'[\\/*?:"<>|]', '', title).strip()
+            output_filename = f"{name}_{safe_title}_{safe_start}_{safe_end}{ext}"
+        else:
+            output_filename = f"{name}_{safe_start}_{safe_end}{ext}"
+
         output_path = os.path.join(OUTPUT_DIR, output_filename)
         
         # Construct ffmpeg command for this segment
