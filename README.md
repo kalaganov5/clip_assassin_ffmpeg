@@ -5,69 +5,111 @@
 <a name="english"></a>
 ## 🇬🇧 English
 
-This script automatically processes video files placed in the `input` folder and saves the cut segments to the `output` folder.
+This toolset automatically processes video files to create Reels and Intros based on text file inputs.
+
+### Project Structure
+
+*   `REELS/`: Folder for processing Reels.
+    *   `input/`: Place source videos and text files here.
+    *   `output/`: Generated clips will appear here.
+*   `INTROS/`: Folder for processing Intros.
+    *   `input/`: Place source videos and text files here.
+    *   `output/`: Generated intros will appear here.
+*   `scripts/`: Contains the python scripts.
+    *   `make_reels.py`: Script for cutting Reels.
+    *   `make_intro.py`: Script for cutting Intros.
 
 ### Setup
 
 1.  Ensure you have **Python 3.x** and **FFmpeg** installed.
-2.  The script will automatically create `input` and `output` folders if they don't exist.
+2.  The scripts will automatically create necessary folders if they don't exist.
 
 ### How to use
 
-1.  **Put your video** in the `input` folder (e.g., `interview.mp4`).
-2.  **Create a text file** with the **same name** in the `input` folder (e.g., `interview.txt`).
-3.  **Add timecodes** to the text file (one range per line). You can optionally add a title in brackets `[Title]` after `--` to include it in the filename:
+#### 1. Creating Reels
+
+1.  **Put your video** in `REELS/input` (e.g., `interview.mp4`).
+2.  **Create a text file** with the **same name** in `REELS/input` (e.g., `interview.txt`).
+3.  **Add timecodes** (one range per line). Optionally add a title in brackets `[Title]` after `--`:
     ```text
     00:01:30:15-00:02:00:20
     00:03:00-00:04:00 --[My Cool Clip]
     ```
 4.  **Run the script**:
     ```bash
-    python clip_assassin_ffmpeg.py
+    python scripts/make_reels.py
     ```
+5.  **Output**: Files like `interview_My Cool Clip_00-03-00_00-04-00.mp4` in `REELS/output`.
 
-### Output
+#### 2. Creating Intros
 
-The script will generate separate video files for each time range in the `output` folder.
-The filenames will include the original name, optional title, and the time range.
-
-**Example:**
-*   Input: `input/interview.mp4`
-*   Range: `00:03:00-00:04:00 --[My Cool Clip]`
-*   Output: `output/interview_My Cool Clip_00-03-00_00-04-00.mp4`
+1.  **Put your video** in `INTROS/input`.
+2.  **Create a text file** with the **same name** in `INTROS/input`.
+3.  **Add timecodes**. The entire line content will be used for the filename (cleaned up).
+    ```text
+    06_00:07:45–00:07:53 -- (2 sec) (Phrase: "People pay us")
+    ```
+4.  **Run the script**:
+    ```bash
+    python scripts/make_intro.py
+    ```
+5.  **Output**: Files like `06_00-07-45–00-07-53 - (2 sec) (People pay us).mp4` in `INTROS/output`.
 
 ---
 
 <a name="russian"></a>
 ## 🇷🇺 Русский
 
-Этот скрипт автоматически обрабатывает видеофайлы, помещенные в папку `input`, и сохраняет нарезанные сегменты в папку `output`.
+Этот набор инструментов автоматически обрабатывает видеофайлы для создания Рилсов (Reels) и Интро на основе текстовых файлов.
+
+### Структура проекта
+
+*   `REELS/`: Папка для обработки Рилсов.
+    *   `input/`: Сюда кладем исходные видео и текстовые файлы.
+    *   `output/`: Здесь появляются готовые клипы.
+*   `INTROS/`: Папка для обработки Интро.
+    *   `input/`: Сюда кладем исходные видео и текстовые файлы.
+    *   `output/`: Здесь появляются готовые интро.
+*   `scripts/`: Папка со скриптами.
+    *   `make_reels.py`: Скрипт для нарезки Рилсов.
+    *   `make_intro.py`: Скрипт для нарезки Интро.
 
 ### Установка
 
 1.  Убедитесь, что у вас установлены **Python 3.x** и **FFmpeg**.
-2.  Скрипт автоматически создаст папки `input` и `output`, если они не существуют.
+2.  Скрипты автоматически создадут нужные папки при запуске.
 
 ### Как использовать
 
-1.  **Поместите ваше видео** в папку `input` (например, `interview.mp4`).
-2.  **Создайте текстовый файл** с **тем же именем** в папке `input` (например, `interview.txt`).
-3.  **Добавьте таймкоды** в текстовый файл (один диапазон на строку). Вы можете добавить заголовок в квадратных скобках `[Заголовок]` после `--`, чтобы включить его в имя файла:
+#### 1. Создание Рилсов (Reels)
+
+1.  **Поместите видео** в папку `REELS/input` (например, `interview.mp4`).
+2.  **Создайте текстовый файл** с **тем же именем** в `REELS/input` (например, `interview.txt`).
+3.  **Добавьте таймкоды** (один диапазон на строку). Можно добавить заголовок в квадратных скобках `[Заголовок]` после `--`:
     ```text
     00:01:30:15-00:02:00:20
     00:03:00-00:04:00 --[Мой крутой клип]
     ```
 4.  **Запустите скрипт**:
     ```bash
-    python clip_assassin_ffmpeg.py
+    python scripts/make_reels.py
     ```
 
-### Результат
+    ```bash
+    python3 scripts/make_reels.py
+    ```
+5.  **Результат**: Файлы вида `interview_Мой крутой клип_00-03-00_00-04-00.mp4` в папке `REELS/output`.
 
-Скрипт создаст отдельные видеофайлы для каждого временного диапазона в папке `output`.
-Имена файлов будут включать оригинальное название, заголовок (если есть) и временной диапазон.
+#### 2. Создание Интро
 
-**Пример:**
-*   Вход: `input/interview.mp4`
-*   Диапазон: `00:03:00-00:04:00 --[Мой крутой клип]`
-*   Выход: `output/interview_Мой крутой клип_00-03-00_00-04-00.mp4`
+1.  **Поместите видео** в папку `INTROS/input`.
+2.  **Создайте текстовый файл** с **тем же именем** в `INTROS/input`.
+3.  **Добавьте таймкоды**. Вся строка целиком будет использована для имени файла (с очисткой от спецсимволов).
+    ```text
+    06_00:07:45–00:07:53 -- (2 сек) (Фраза: «Люди платят нам»)
+    ```
+4.  **Запустите скрипт**:
+    ```bash
+    python scripts/make_intro.py
+    ```
+5.  **Результат**: Файлы вида `06_00-07-45–00-07-53 - (2 сек) (Люди платят нам).mp4` в папке `INTROS/output`.

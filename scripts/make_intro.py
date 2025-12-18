@@ -8,8 +8,9 @@ import math
 import shutil
 
 # Configuration
-INPUT_DIR = "input"
-OUTPUT_DIR = "output"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+INPUT_DIR = os.path.join(BASE_DIR, "INTROS", "input")
+OUTPUT_DIR = os.path.join(BASE_DIR, "INTROS", "output")
 
 def get_video_info(file_path):
     """
@@ -128,7 +129,7 @@ def parse_ranges(file_path, fps):
     """
     Reads the input file and parses time ranges.
     Format: start-end
-    Returns a list of tuples: (start_seconds, end_seconds, original_line_string, title)
+    Returns a list of tuples: (start_seconds, end_seconds, raw_line_content)
     """
     ranges = []
     if not os.path.exists(file_path):
@@ -140,46 +141,73 @@ def parse_ranges(file_path, fps):
             if not line:
                 continue
             
-            title = ""
-            # Extract title from --[Title]
-            match = re.search(r'--\[(.*?)\]', line)
-            if match:
-                title = match.group(1)
-
-            # Ignore comments starting with --
-            if '--' in line:
-                line = line.split('--')[0]
-
-            # Normalize dashes
-            clean_line = re.sub(r'[\u2013\u2014]', '-', line)
-            # Remove spaces
-            clean_line = clean_line.replace(' ', '')
+            # Find all time-like patterns in the line
+            # Matches HH:MM:SS:FF, HH:MM:SS, MM:SS, etc.
+            # This regex looks for sequences of digits separated by colons or semicolons
+            time_pattern = r'((?:\d{1,2}:)?\d{1,2}:\d{2}(?:[:;]\d{2})?)'
+            times = re.findall(time_pattern, line)
             
-            parts = clean_line.split('-')
-            if len(parts) < 2:
-                print(f"Skipping invalid line: {line}")
-                continue
+            if len(times) >= 2:
+                start_str = times[0]
+                end_str = times[1]
                 
-            start_str = parts[0]
-            end_str = parts[-1]
-            
-            start_sec = parse_time(start_str, fps)
-            end_sec = parse_time(end_str, fps)
-            
-            if start_sec is not None and end_sec is not None:
-                # Store original strings for filename generation
-                ranges.append((start_sec, end_sec, start_str, end_str, title))
+                start_sec = parse_time(start_str, fps)
+                end_sec = parse_time(end_str, fps)
+                
+                if start_sec is not None and end_sec is not None:
+                    # Store raw line for filename generation
+                    ranges.append((start_sec, end_sec, line))
+                else:
+                    print(f"Failed to parse time in line: {line}")
             else:
-                print(f"Failed to parse time in line: {line}")
+                # Fallback to dash splitting if regex fails (legacy support)
+                # Normalize dashes
+                clean_line = re.sub(r'[\u2013\u2014]', '-', line)
+                # Note: We don't strip comments here anymore to preserve text for filename
+                
+                parts = clean_line.split('-')
+                
+                if len(parts) >= 2:
+                    # Try to find time-like strings in the split parts
+                    # This is a bit heuristic
+                    start_candidate = parts[0].strip()
+                    end_candidate = parts[1].strip()
+                    
+                    # Clean up start string from potential prefixes like "01_" just for parsing
+                    start_clean = re.sub(r'^\d+_', '', start_candidate)
+                    # Clean up end string from potential text
+                    end_clean = end_candidate.split(' ')[0]
+
+                    start_sec = parse_time(start_clean, fps)
+                    end_sec = parse_time(end_clean, fps)
+                    
+                    if start_sec is not None and end_sec is not None:
+                        ranges.append((start_sec, end_sec, line))
+                    else:
+                        print(f"Failed to parse time in line: {line}")
+                else:
+                    print(f"Skipping invalid line: {line}")
                 
     return ranges
 
-def format_time_for_filename(time_str):
+def clean_filename(text):
     """
-    Replaces colons and other special chars with dashes for safe filenames.
-    e.g. 00:01:30:15 -> 00-01-30-15
+    Cleans the text to be used as a filename according to user requirements.
     """
-    return re.sub(r'[:;.]', '-', time_str)
+    # User specific replacements
+    text = text.replace('--', '-')
+    text = re.sub(r'Фраза:\s*', '', text, flags=re.IGNORECASE)
+    text = text.replace('«', '').replace('»', '').replace('"', '')
+    
+    # Windows invalid chars
+    # Replace : with - to look similar to time
+    text = text.replace(':', '-')
+    # Remove others
+    text = re.sub(r'[\\/*?"<>|]', '', text)
+    
+    # Collapse multiple spaces
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
 def process_video(input_path, ranges):
     """
@@ -190,23 +218,14 @@ def process_video(input_path, ranges):
     
     print(f"Processing {len(ranges)} segments for {filename}...")
     
-    for i, (start, end, start_str, end_str, title) in enumerate(ranges):
+    for i, (start, end, raw_line) in enumerate(ranges):
         duration = end - start
         if duration <= 0:
             print(f"Skipping invalid range: {start} -> {end}")
             continue
             
-        # Format filename: video_START_END.mp4
-        safe_start = format_time_for_filename(start_str)
-        safe_end = format_time_for_filename(end_str)
-        
-        if title:
-            # Sanitize title
-            safe_title = re.sub(r'[\\/*?:"<>|]', '', title).strip()
-            output_filename = f"{name}_{safe_title}_{safe_start}_{safe_end}{ext}"
-        else:
-            output_filename = f"{name}_{safe_start}_{safe_end}{ext}"
-
+        # Generate filename from the raw line content
+        output_filename = clean_filename(raw_line) + ext
         output_path = os.path.join(OUTPUT_DIR, output_filename)
         
         # Construct ffmpeg command for this segment
@@ -224,7 +243,7 @@ def process_video(input_path, ranges):
             output_path
         ]
         
-        print(f"  Cutting segment {i+1}: {start_str} to {end_str} -> {output_filename}")
+        print(f"  Cutting segment {i+1}: {output_filename}")
         try:
             subprocess.run(cmd, check=True, stderr=subprocess.DEVNULL) # Hide ffmpeg output
         except subprocess.CalledProcessError as e:
