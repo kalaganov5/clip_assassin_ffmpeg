@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import argparse
 import subprocess
 import re
@@ -9,6 +10,14 @@ import shutil
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
+# Ensure UTF-8 encoding for output
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except AttributeError:
+        pass # Python < 3.7
+
 # Configuration
 # We will determine directories dynamically via GUI
 
@@ -16,7 +25,7 @@ def select_input_folder():
     """Opens a dialog to select the input folder."""
     root = tk.Tk()
     root.withdraw() # Hide the main window
-    folder_path = filedialog.askdirectory(title="Выберите папку с исходными видео (Input)")
+    folder_path = filedialog.askdirectory(title="Select Input Folder / Выберите папку с видео")
     return folder_path
 
 def get_video_info(file_path):
@@ -313,11 +322,15 @@ def main():
         process_video(input_path, ranges, output_dir)
         processed_count += 1
         
-    print("\nГотово!")
+    print("\nDone! / Готово!")
     if processed_count > 0:
-        messagebox.showinfo("Готово", f"Обработано видео: {processed_count}\nРезультаты в папке 'output'")
+        messagebox.showinfo("Done / Готово", f"Processed videos: {processed_count}\nResults in 'output' folder\n\nОбработано видео: {processed_count}\nРезультаты в папке 'output'")
     else:
-        messagebox.showinfo("Готово", "Ничего не обработано. Проверьте наличие .txt файлов рядом с видео.")
+        messagebox.showinfo("Done / Готово", "Nothing processed. Check .txt files.\n\nНичего не обработано. Проверьте .txt файлы.")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        messagebox.showerror("Error / Ошибка", f"An error occurred:\n{str(e)}\n\nПроизошла ошибка:\n{str(e)}")
+        raise
