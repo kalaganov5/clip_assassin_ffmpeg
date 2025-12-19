@@ -7,53 +7,55 @@
 
 This toolset automatically processes video files to create Reels and Intros based on text file inputs.
 
-### Project Structure
+### 📥 Download
 
-*   `REELS/`: Folder for processing Reels.
-    *   `input/`: Place source videos and text files here.
-    *   `output/`: Generated clips will appear here.
-*   `INTROS/`: Folder for processing Intros.
-    *   `input/`: Place source videos and text files here.
-    *   `output/`: Generated intros will appear here.
-*   `scripts/`: Contains the python scripts.
-    *   `make_reels.py`: Script for cutting Reels.
-    *   `make_intro.py`: Script for cutting Intros.
+You don't need to install Python! Just download the latest version for your OS from the **[Releases](../../releases)** page.
 
-### Setup
+*   **Windows**: Download `.exe` files.
+*   **macOS**: Download `.zip` files. Unzip them to get the `.app` application.
 
-1.  Ensure you have **Python 3.x** and **FFmpeg** installed.
-2.  The scripts will automatically create necessary folders if they don't exist.
+### ⚠️ macOS Users (Important!)
 
-### How to use
+When you try to run the app for the first time, macOS might block it because it's from an "Unidentified Developer".
 
-#### 1. Creating Reels
+1.  **Right-click** (or Control-click) the app icon.
+2.  Select **Open** from the menu.
+3.  Click **Open** in the dialog box that appears.
+    *   *You only need to do this once.*
 
-1.  **Put your video** in `REELS/input` (e.g., `interview.mp4`).
-2.  **Create a text file** with the **same name** in `REELS/input` (e.g., `interview.txt`).
-3.  **Add timecodes** (one range per line). Optionally add a title in brackets `[Title]` after `--`:
-    ```text
-    00:01:30:15-00:02:00:20
-    00:03:00-00:04:00 --[My Cool Clip]
-    ```
-4.  **Run the script**:
-    ```bash
-    python scripts/make_reels.py
-    ```
-5.  **Output**: Files like `interview_My Cool Clip_00-03-00_00-04-00.mp4` in `REELS/output`.
+### ⚙️ Prerequisites
 
-#### 2. Creating Intros
+Before running the program, you **MUST** have **FFmpeg** installed on your system.
 
-1.  **Put your video** in `INTROS/input`.
-2.  **Create a text file** with the **same name** in `INTROS/input`.
-3.  **Add timecodes**. The entire line content will be used for the filename (cleaned up).
-    ```text
-    06_00:07:45–00:07:53 -- (2 sec) (Phrase: "People pay us")
-    ```
-4.  **Run the script**:
-    ```bash
-    python scripts/make_intro.py
-    ```
-5.  **Output**: Files like `06_00-07-45–00-07-53 - (2 sec) (People pay us).mp4` in `INTROS/output`.
+#### How to install FFmpeg:
+
+*   **Windows**:
+    1.  Download `ffmpeg-release-essentials.zip` from [gyan.dev](https://www.gyan.dev/ffmpeg/builds/).
+    2.  Extract `ffmpeg.exe` from the `bin` folder.
+    3.  Place `ffmpeg.exe` **in the same folder** as `ClipAssassin_Reels.exe` (or add it to your system PATH).
+*   **macOS**:
+    *   Install via Homebrew: `brew install ffmpeg`
+
+### 🚀 How to use
+
+1.  **Run the program** (`ClipAssassin_Reels` or `ClipAssassin_Intro`).
+2.  A dialog window will open. **Select the folder** containing your video files and corresponding `.txt` files.
+3.  The program will automatically create an `output` folder inside your selected folder and save the clips there.
+
+#### Text File Formats
+
+**For Reels (`ClipAssassin_Reels`):**
+```text
+00:01:30:15-00:02:00:20
+00:03:00-00:04:00 --[My Cool Clip]
+```
+*Result: `VideoName_My Cool Clip_00-03-00_00-04-00.mp4`*
+
+**For Intros (`ClipAssassin_Intro`):**
+```text
+06_00:07:45–00:07:53 -- (2 sec) (Phrase: "People pay us")
+```
+*Result: `06_00-07-45–00-07-53 - (2 sec) (People pay us).mp4`*
 
 ---
 
@@ -62,54 +64,52 @@ This toolset automatically processes video files to create Reels and Intros base
 
 Этот набор инструментов автоматически обрабатывает видеофайлы для создания Рилсов (Reels) и Интро на основе текстовых файлов.
 
-### Структура проекта
+### 📥 Скачать
 
-*   `REELS/`: Папка для обработки Рилсов.
-    *   `input/`: Сюда кладем исходные видео и текстовые файлы.
-    *   `output/`: Здесь появляются готовые клипы.
-*   `INTROS/`: Папка для обработки Интро.
-    *   `input/`: Сюда кладем исходные видео и текстовые файлы.
-    *   `output/`: Здесь появляются готовые интро.
-*   `scripts/`: Папка со скриптами.
-    *   `make_reels.py`: Скрипт для нарезки Рилсов.
-    *   `make_intro.py`: Скрипт для нарезки Интро.
+Вам не нужно устанавливать Python! Просто скачайте последнюю версию для вашей ОС на странице **[Releases](../../releases)**.
 
-### Установка
+*   **Windows**: Скачивайте `.exe` файлы.
+*   **macOS**: Скачивайте `.zip` архивы. Распакуйте их, чтобы получить приложение `.app`.
 
-1.  Убедитесь, что у вас установлены **Python 3.x** и **FFmpeg**.
-2.  Скрипты автоматически создадут нужные папки при запуске.
+### ⚠️ Пользователям macOS (Важно!)
 
-### Как использовать
+При первом запуске macOS может заблокировать программу, так как она от "Неустановленного разработчика".
 
-#### 1. Создание Рилсов (Reels)
+1.  Нажмите **Правой кнопкой мыши** (или Control+клик) на иконку приложения.
+2.  Выберите **Открыть** (Open) в меню.
+3.  Нажмите **Открыть** (Open) в появившемся окне.
+    *   *Это нужно сделать только один раз.*
 
-1.  **Поместите видео** в папку `REELS/input` (например, `interview.mp4`).
-2.  **Создайте текстовый файл** с **тем же именем** в `REELS/input` (например, `interview.txt`).
-3.  **Добавьте таймкоды** (один диапазон на строку). Можно добавить заголовок в квадратных скобках `[Заголовок]` после `--`:
-    ```text
-    00:01:30:15-00:02:00:20
-    00:03:00-00:04:00 --[Мой крутой клип]
-    ```
-4.  **Запустите скрипт**:
-    ```bash
-    python scripts/make_reels.py
-    ```
+### ⚙️ Требования
 
-    ```bash
-    python3 scripts/make_reels.py
-    ```
-5.  **Результат**: Файлы вида `interview_Мой крутой клип_00-03-00_00-04-00.mp4` в папке `REELS/output`.
+Перед запуском программы у вас **ОБЯЗАТЕЛЬНО** должен быть установлен **FFmpeg**.
 
-#### 2. Создание Интро
+#### Как установить FFmpeg:
 
-1.  **Поместите видео** в папку `INTROS/input`.
-2.  **Создайте текстовый файл** с **тем же именем** в `INTROS/input`.
-3.  **Добавьте таймкоды**. Вся строка целиком будет использована для имени файла (с очисткой от спецсимволов).
-    ```text
-    06_00:07:45–00:07:53 -- (2 сек) (Фраза: «Люди платят нам»)
-    ```
-4.  **Запустите скрипт**:
-    ```bash
-    python scripts/make_intro.py
-    ```
-5.  **Результат**: Файлы вида `06_00-07-45–00-07-53 - (2 сек) (Люди платят нам).mp4` в папке `INTROS/output`.
+*   **Windows**:
+    1.  Скачайте `ffmpeg-release-essentials.zip` с сайта [gyan.dev](https://www.gyan.dev/ffmpeg/builds/).
+    2.  Извлеките файл `ffmpeg.exe` из папки `bin`.
+    3.  Положите `ffmpeg.exe` **в ту же папку**, где лежит ваша программа `ClipAssassin_Reels.exe` (или добавьте его в системный PATH).
+*   **macOS**:
+    *   Установите через Homebrew: `brew install ffmpeg`
+
+### 🚀 Как использовать
+
+1.  **Запустите программу** (`ClipAssassin_Reels` или `ClipAssassin_Intro`).
+2.  Откроется окно. **Выберите папку**, в которой лежат ваши видео и текстовые файлы (`.txt`).
+3.  Программа автоматически создаст папку `output` внутри выбранной папки и сохранит туда результат.
+
+#### Форматы текстовых файлов
+
+**Для Рилсов (`ClipAssassin_Reels`):**
+```text
+00:01:30:15-00:02:00:20
+00:03:00-00:04:00 --[Мой крутой клип]
+```
+*Результат: `VideoName_Мой крутой клип_00-03-00_00-04-00.mp4`*
+
+**Для Интро (`ClipAssassin_Intro`):**
+```text
+06_00:07:45–00:07:53 -- (2 сек) (Фраза: «Люди платят нам»)
+```
+*Результат: `06_00-07-45–00-07-53 - (2 сек) (Люди платят нам).mp4`*

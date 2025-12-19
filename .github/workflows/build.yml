@@ -29,17 +29,28 @@ jobs:
                   python -m pip install --upgrade pip
                   pip install pyinstaller
 
-            - name: Build Reels Tool
-              run: pyinstaller --onefile --name "ClipAssassin_Reels" scripts/make_reels.py
+            - name: Build (Windows)
+              if: runner.os == 'Windows'
+              run: |
+                  pyinstaller --onefile --console --name "ClipAssassin_Reels" scripts/make_reels.py
+                  pyinstaller --onefile --console --name "ClipAssassin_Intro" scripts/make_intro.py
 
-            - name: Build Intro Tool
-              run: pyinstaller --onefile --name "ClipAssassin_Intro" scripts/make_intro.py
+            - name: Build (macOS)
+              if: runner.os == 'macOS'
+              run: |
+                  pyinstaller --windowed --name "ClipAssassin_Reels" scripts/make_reels.py
+                  pyinstaller --windowed --name "ClipAssassin_Intro" scripts/make_intro.py
+                  cd dist
+                  zip -r ClipAssassin_Reels_macOS.zip ClipAssassin_Reels.app
+                  zip -r ClipAssassin_Intro_macOS.zip ClipAssassin_Intro.app
 
             - name: Upload Artifacts
               uses: actions/upload-artifact@v4
               with:
                   name: ClipAssassin-${{ matrix.os }}
-                  path: dist/*
+                  path: |
+                      dist/*.exe
+                      dist/*.zip
 
     release:
         name: Create Release

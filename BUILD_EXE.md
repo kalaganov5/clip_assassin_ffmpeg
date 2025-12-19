@@ -1,8 +1,18 @@
-# Инструкция по созданию EXE файлов (Windows)
+# Инструкция по сборке (Build Instructions)
 
-Чтобы превратить скрипты в программы (.exe), которые можно запускать без установки Python, выполните следующие шаги.
+## 🤖 Автоматическая сборка (GitHub Actions)
 
-## 1. Установка PyInstaller
+Этот проект настроен на автоматическую сборку при каждом обновлении (push) или создании релиза.
+*   Зайдите во вкладку **Actions** на GitHub, чтобы увидеть процесс сборки.
+*   Готовые файлы можно скачать из **Artifacts** (для каждого коммита) или **Releases** (для стабильных версий).
+
+---
+
+## 🛠 Ручная сборка (Manual Build)
+
+Чтобы превратить скрипты в программы (.exe / binary) локально, выполните следующие шаги.
+
+### 1. Установка PyInstaller
 
 Откройте терминал и установите библиотеку:
 
@@ -10,33 +20,37 @@
 pip install pyinstaller
 ```
 
-## 2. Сборка программ
+### 2. Сборка программ
 
 Выполните эти команды в терминале (находясь в корне проекта):
 
-### Для Reels
+#### Windows
 ```bash
-pyinstaller --onefile --name "ClipAssassin_Reels" scripts/make_reels.py
+pyinstaller --onefile --console --name "ClipAssassin_Reels" scripts/make_reels.py
+pyinstaller --onefile --console --name "ClipAssassin_Intro" scripts/make_intro.py
 ```
 
-### Для Intro
+#### macOS
 ```bash
+# Создание .app бандла
+pyinstaller --windowed --name "ClipAssassin_Reels" scripts/make_reels.py
+pyinstaller --windowed --name "ClipAssassin_Intro" scripts/make_intro.py
+```
+
+#### Linux
+```bash
+pyinstaller --onefile --name "ClipAssassin_Reels" scripts/make_reels.py
 pyinstaller --onefile --name "ClipAssassin_Intro" scripts/make_intro.py
 ```
 
-## 3. Где искать готовые программы?
+### 3. Где искать готовые программы?
 
-После сборки у вас появится папка `dist`. В ней будут лежать два файла:
-*   `ClipAssassin_Reels.exe`
-*   `ClipAssassin_Intro.exe`
+После сборки у вас появится папка `dist`. В ней будут лежать исполняемые файлы.
 
-## 4. Как использовать
+### 4. Как использовать
 
-Теперь программы полностью автономны!
-
-1.  Заберите `.exe` файлы из папки `dist` и положите их куда угодно (например, на Рабочий стол).
+1.  Заберите файлы из папки `dist`.
 2.  Запустите программу.
 3.  Откроется окно выбора папки. Выберите папку, где лежат ваши видео и текстовые файлы.
-4.  Программа сама создаст папку `output` внутри выбранной папки и сохранит туда результат.
 
-**Важно:** Для работы программ на компьютере должен быть установлен **FFmpeg** (или файл `ffmpeg.exe` должен лежать рядом с программой).
+**Важно:** Рядом с программой (или в системе) должен быть установлен **FFmpeg**.
