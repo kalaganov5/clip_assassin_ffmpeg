@@ -9,6 +9,7 @@ import math
 import shutil
 import tkinter as tk
 from tkinter import filedialog, messagebox
+import locale
 
 # Ensure UTF-8 encoding for output
 if sys.stdout.encoding != 'utf-8':
@@ -17,6 +18,13 @@ if sys.stdout.encoding != 'utf-8':
         sys.stderr.reconfigure(encoding='utf-8')
     except AttributeError:
         pass # Python < 3.7
+
+# Set locale for macOS to avoid encoding issues
+if sys.platform == 'darwin':
+    try:
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+    except locale.Error:
+        pass
 
 # Configuration
 # We will determine directories dynamically via GUI
