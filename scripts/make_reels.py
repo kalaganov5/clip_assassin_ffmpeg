@@ -6,11 +6,18 @@ import sys
 import json
 import math
 import shutil
+import tkinter as tk
+from tkinter import filedialog, messagebox
 
 # Configuration
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-INPUT_DIR = os.path.join(BASE_DIR, "REELS", "input")
-OUTPUT_DIR = os.path.join(BASE_DIR, "REELS", "output")
+# We will determine directories dynamically via GUI
+
+def select_input_folder():
+    """Opens a dialog to select the input folder."""
+    root = tk.Tk()
+    root.withdraw() # Hide the main window
+    folder_path = filedialog.askdirectory(title="Выберите папку с исходными видео (Input)")
+    return folder_path
 
 def get_video_info(file_path):
     """
@@ -199,9 +206,9 @@ def format_time_for_filename(time_str):
     """
     return re.sub(r'[:;.]', '-', time_str)
 
-def process_video(input_path, ranges):
+def process_video(input_path, ranges, output_dir):
     """
-    Cuts the video segments and saves them as separate files in OUTPUT_DIR.
+    Cuts the video segments and saves them as separate files in output_dir.
     """
     filename = os.path.basename(input_path)
     name, ext = os.path.splitext(filename)
@@ -225,7 +232,7 @@ def process_video(input_path, ranges):
         else:
             output_filename = f"{name}_{safe_start}_{safe_end}{ext}"
 
-        output_path = os.path.join(OUTPUT_DIR, output_filename)
+        output_path = os.path.join(output_dir, output_filename)
         
         # Construct ffmpeg command for this segment
         cmd = [
@@ -249,51 +256,67 @@ def process_video(input_path, ranges):
             print(f"  Error cutting segment: {e}")
 
 def main():
-    # Ensure directories exist
-    if not os.path.exists(INPUT_DIR):
-        os.makedirs(INPUT_DIR)
-        print(f"Created '{INPUT_DIR}' folder. Please put your videos there.")
+    print("Запуск Clip Assassin Reels...")
+    
+    input_dir = select_input_folder()
+    if not input_dir:
+        print("Папка не выбрана. Выход.")
         return
 
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
+    output_dir = os.path.join(input_dir, "output")
+    if not os.path.exists(output_dir):
+        try:
+            os.makedirs(output_dir)
+            print(f"Создана папка для результатов: {output_dir}")
+        except OSError as e:
+            print(f"Ошибка создания папки output: {e}")
+            input("Нажмите Enter для выхода...")
+            return
 
     # Scan for video files
     video_extensions = ('.mp4', '.mov', '.mkv', '.avi', '.m4v')
-    files = [f for f in os.listdir(INPUT_DIR) if f.lower().endswith(video_extensions)]
+    files = [f for f in os.listdir(input_dir) if f.lower().endswith(video_extensions)]
     
     if not files:
-        print(f"No video files found in '{INPUT_DIR}'.")
+        print(f"В папке '{input_dir}' не найдено видео файлов.")
+        messagebox.showwarning("Внимание", "Видео файлы не найдены в выбранной папке.")
         return
 
-    print(f"Found {len(files)} video(s) in '{INPUT_DIR}'.")
+    print(f"Найдено {len(files)} видео в '{input_dir}'.")
+    
+    processed_count = 0
 
     for video_file in files:
-        input_path = os.path.join(INPUT_DIR, video_file)
+        input_path = os.path.join(input_dir, video_file)
         name, _ = os.path.splitext(video_file)
         
         # Look for corresponding text file: video.txt
-        txt_file = os.path.join(INPUT_DIR, f"{name}.txt")
+        txt_file = os.path.join(input_dir, f"{name}.txt")
         
         if not os.path.exists(txt_file):
-            print(f"Skipping {video_file}: No matching text file found ({name}.txt)")
+            print(f"Пропуск {video_file}: Не найден текстовый файл ({name}.txt)")
             continue
             
-        print(f"\n--- Processing {video_file} ---")
+        print(f"\n--- Обработка {video_file} ---")
         fps = get_video_info(input_path)
         if fps is None:
             continue
             
-        print(f"Detected FPS: {fps}")
+        print(f"FPS: {fps}")
         ranges = parse_ranges(txt_file, fps)
         
         if not ranges:
-            print(f"No valid ranges found in {name}.txt")
+            print(f"В файле {name}.txt не найдено диапазонов для нарезки.")
             continue
             
-        process_video(input_path, ranges)
+        process_video(input_path, ranges, output_dir)
+        processed_count += 1
         
-    print("\nAll done!")
+    print("\nГотово!")
+    if processed_count > 0:
+        messagebox.showinfo("Готово", f"Обработано видео: {processed_count}\nРезультаты в папке 'output'")
+    else:
+        messagebox.showinfo("Готово", "Ничего не обработано. Проверьте наличие .txt файлов рядом с видео.")
 
 if __name__ == "__main__":
     main()
