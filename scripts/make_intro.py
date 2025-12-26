@@ -249,7 +249,8 @@ def process_video(input_path, ranges, output_dir):
             continue
             
         # Generate filename from the raw line content
-        output_filename = clean_filename(raw_line) + ext
+        # Force .mp4 extension since we are encoding to H.264/AAC
+        output_filename = clean_filename(raw_line) + ".mp4"
         output_path = os.path.join(output_dir, output_filename)
         
         # Construct ffmpeg command for this segment
@@ -260,10 +261,10 @@ def process_video(input_path, ranges, output_dir):
             '-i', input_path,
             '-t', str(duration),
             '-c:v', 'libx264', # Use x264
-            '-preset', 'fast',
-            '-crf', '22', # Good quality
+            '-preset', 'slow', # Better compression efficiency
+            '-crf', '18', # High quality (visually lossless)
             '-c:a', 'aac',
-            '-b:a', '192k',
+            '-b:a', '320k', # High quality audio
             output_path
         ]
         
@@ -327,7 +328,12 @@ def main():
             print(f"В файле {name}.txt не найдено диапазонов для нарезки.")
             continue
             
-        process_video(input_path, ranges, output_dir)
+        # Create subfolder for this video
+        video_output_dir = os.path.join(output_dir, name)
+        if not os.path.exists(video_output_dir):
+            os.makedirs(video_output_dir)
+
+        process_video(input_path, ranges, video_output_dir)
         processed_count += 1
         
     print("\nDone! / Готово!")

@@ -245,9 +245,9 @@ def process_video(input_path, ranges, output_dir):
         if title:
             # Sanitize title
             safe_title = re.sub(r'[\\/*?:"<>|]', '', title).strip()
-            output_filename = f"{name}_{safe_title}_{safe_start}_{safe_end}{ext}"
+            output_filename = f"{name}_{safe_title}_{safe_start}_{safe_end}.mp4"
         else:
-            output_filename = f"{name}_{safe_start}_{safe_end}{ext}"
+            output_filename = f"{name}_{safe_start}_{safe_end}.mp4"
 
         output_path = os.path.join(output_dir, output_filename)
         
@@ -259,10 +259,10 @@ def process_video(input_path, ranges, output_dir):
             '-i', input_path,
             '-t', str(duration),
             '-c:v', 'libx264', # Use x264
-            '-preset', 'fast',
-            '-crf', '22', # Good quality
+            '-preset', 'slow', # Better compression efficiency
+            '-crf', '18', # High quality (visually lossless)
             '-c:a', 'aac',
-            '-b:a', '192k',
+            '-b:a', '320k', # High quality audio
             output_path
         ]
         
@@ -326,7 +326,12 @@ def main():
             print(f"В файле {name}.txt не найдено диапазонов для нарезки.")
             continue
             
-        process_video(input_path, ranges, output_dir)
+        # Create subfolder for this video
+        video_output_dir = os.path.join(output_dir, name)
+        if not os.path.exists(video_output_dir):
+            os.makedirs(video_output_dir)
+
+        process_video(input_path, ranges, video_output_dir)
         processed_count += 1
         
     print("\nDone! / Готово!")
