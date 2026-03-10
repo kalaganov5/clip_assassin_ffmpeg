@@ -2,29 +2,37 @@
 import re
 import os
 import sys
-from tkinter import messagebox
+# import tkinter as tk
+# from tkinter import messagebox
 import common
 
 # Setup encoding and locale
 common.setup_encoding()
 
-def parse_ranges(file_path, fps):
-    """
-    Reads the input file and parses time ranges.
-    Format: start-end
-    Returns a list of tuples: (start_seconds, end_seconds, raw_line_content)
-    """
-    ranges = []
-    if not os.path.exists(file_path):
-        return ranges
+def main():
+    # try:
+    #    root = tk.Tk()
+    #    root.withdraw()
+    # except Exception as e:
+    #    pass
 
-    with open(file_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            
-            # Find all time-like patterns in the line
+    input_dir = common.select_input_folder()
+    if not input_dir:
+        print("Папка не выбрана. Выход.")
+        return
+
+    output_dir = os.path.join(input_dir, "output")
+    if not os.path.exists(output_dir):
+        try:
+            os.makedirs(output_dir)
+            print(f"Создана папка для результатов: {output_dir}")
+        except OSError as e:
+            print(f"Ошибка создания папки output: {e}")
+            input("Нажмите Enter для выхода...")
+            return
+
+    # Scan for video files
+
             # Matches HH:MM:SS:FF, HH:MM:SS, MM:SS, etc.
             # This regex looks for sequences of digits separated by colons or semicolons
             time_pattern = r'((?:\d{1,2}:)?\d{1,2}:\d{2}(?:[:;]\d{2})?)'
@@ -164,9 +172,79 @@ def main():
     else:
         messagebox.showinfo("Done / Готово", "Nothing processed. Check .txt files.\n\nНичего не обработано. Проверьте .txt файлы.")
 
+def parse_ranges(file_path, fps):
+    """
+    Reads the input file and parses time ranges.
+    Format: start-end
+    Returns a list of tuples: (start_seconds, end_seconds, raw_line_content)
+    """
+    ranges = []
+    if not os.path.exists(file_path):
+        return ranges
+
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            
+            # Find all time-like patterns in the line
+            # Matches HH:MM:SS:FF, HH:MM:SS, MM:SS, etc.
+            # This regex looks for sequences of digits separated by colons or semicolons
+            time_pattern = r'((?:\d{1,2}:)?\d{1,2}:\d{2}(?:[:;]\d{2})?)'
+            times = re.findall(time_pattern, line)
+            
+            if len(times) >= 2:
+                start_str = times[0]
+                end_str = times[1]
+                
+                start_sec = common.parse_time(start_str, fps)
+                end_sec = common.parse_time(end_str, fps)
+                
+                if start_sec is not None and end_sec is not None:
+                    # Store raw line for filename generation
+                    ranges.append((start_sec, end_sec, line))
+                else:
+                    print(f"Failed to parse time in line: {line}")
+            else:
+                # Fallback to dash splitting if regex fails (legacy support)
+                # Normalize dashes
+                clean_line = re.sub(r'[\u2013\u2014]', '-', line)
+                # Note: We don't strip comments here anymore to preserve text for filename
+                
+                parts = clean_line.split('-')
+                
+                if len(parts) >= 2:
+                    # Try to find time-like strings in the split parts
+                    # This is a bit heuristic
+                    start_candidate = parts[0].strip()
+                    end_candidate = parts[1].strip()
+                    
+                    # Clean up start string from potential prefixes like "01_" just for parsing
+                    start_clean = re.sub(r'^\d+_', '', start_candidate)
+                    # Clean up end string from potential text
+                    end_clean = end_candidate.split(' ')[0]
+
+                    start_sec = common.parse_time(start_clean, fps)
+                    end_sec = common.parse_time(end_clean, fps)
+                    
+                    if start_sec is not None and end_sec is not None:
+                        ranges.append((start_sec, end_sec, line))
+                    else:
+                        print(f"Failed to parse time in line: {line}")
+                else:
+                    print(f"Skipping invalid line: {line}")
+                
+    return ranges
+
 if __name__ == "__main__":
+
     try:
         main()
     except Exception as e:
-        messagebox.showerror("Error / Ошибка", f"An error occurred:\n{str(e)}\n\nПроизошла ошибка:\n{str(e)}")
+        # If Tkinter is initialized, try to show error message
+        try:
+            messagebox.showerror("Error / Ошибка", f"An error occurred:\n{str(e)}\n\nПроизошла ошибка:\n{str(e)}")
+        except:
+            print(f"Error: {e}")
         raise

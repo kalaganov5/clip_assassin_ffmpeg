@@ -4,19 +4,23 @@ import re
 import os
 import sys
 import json
-import tkinter as tk
-from tkinter import filedialog
 import locale
+
+# Tkinter removed to prevent macOS crashes
+# import tkinter as tk
+# from tkinter import filedialog
 
 def setup_encoding():
     """
     Sets up UTF-8 encoding for stdout/stderr and locale for macOS.
     """
     # Ensure UTF-8 encoding for output
-    if sys.stdout.encoding != 'utf-8':
+    if sys.stdout and getattr(sys.stdout, 'encoding', None) != 'utf-8':
         try:
-            sys.stdout.reconfigure(encoding='utf-8')
-            sys.stderr.reconfigure(encoding='utf-8')
+            if hasattr(sys.stdout, 'reconfigure'):
+                sys.stdout.reconfigure(encoding='utf-8')
+            if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
+                sys.stderr.reconfigure(encoding='utf-8')
         except AttributeError:
             pass # Python < 3.7
 
@@ -29,10 +33,24 @@ def setup_encoding():
 
 def select_input_folder():
     """Opens a dialog to select the input folder."""
-    root = tk.Tk()
-    root.withdraw() # Hide the main window
-    folder_path = filedialog.askdirectory(title="Select Input Folder / Выберите папку с видео")
-    return folder_path
+    if sys.platform == 'darwin':
+        try:
+            cmd = """
+            tell application "System Events"
+                activate
+                set f to choose folder with prompt "Select Input Folder / Выберите папку с видео"
+                return POSIX path of f
+            end tell
+            """
+            result = subprocess.run(['osascript', '-e', cmd], capture_output=True, text=True, check=True)
+            return result.stdout.strip()
+        except subprocess.CalledProcessError:
+            return None # User cancelled
+    else:
+        # Fallback for other OS (CLI only to avoid Tkinter dependency)
+        print("Enter input folder path:")
+        path = input("> ").strip().strip('"').strip("'")
+        return path if path else None
 
 def get_video_info(file_path):
     """
