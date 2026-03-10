@@ -6,6 +6,8 @@ import sys
 import json
 import locale
 
+_CACHED_VIDEO_ENCODER = None
+
 # Tkinter removed to prevent macOS crashes
 # import tkinter as tk
 # from tkinter import filedialog
@@ -191,23 +193,69 @@ def clean_filename(text):
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
+
+def _detect_best_video_encoder():
+    """
+    Detects the best available H.264 encoder in ffmpeg.
+    On Windows, hardware encoders are preferred when available.
+    """
+    global _CACHED_VIDEO_ENCODER
+
+    if _CACHED_VIDEO_ENCODER is not None:
+        return _CACHED_VIDEO_ENCODER
+
+    try:
+        result = subprocess.run(
+            ['ffmpeg', '-hide_banner', '-encoders'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        encoders_output = result.stdout.lower()
+    except Exception:
+        _CACHED_VIDEO_ENCODER = 'libx264'
+        return _CACHED_VIDEO_ENCODER
+
+    if sys.platform == 'win32':
+        preferred = ['h264_nvenc', 'h264_qsv', 'h264_amf', 'libx264']
+    elif sys.platform == 'darwin':
+        preferred = ['h264_videotoolbox', 'libx264']
+    else:
+        preferred = ['h264_vaapi', 'h264_nvenc', 'h264_qsv', 'h264_amf', 'libx264']
+
+    for encoder in preferred:
+        if encoder in encoders_output:
+            _CACHED_VIDEO_ENCODER = encoder
+            return _CACHED_VIDEO_ENCODER
+
+    _CACHED_VIDEO_ENCODER = 'libx264'
+    return _CACHED_VIDEO_ENCODER
+
 def run_ffmpeg_cut(input_path, start, duration, output_path):
     """
     Executes the ffmpeg command to cut the video.
     """
+    video_encoder = _detect_best_video_encoder()
+
     cmd = [
         'ffmpeg',
         '-y', # Overwrite
         '-ss', str(start),
         '-i', input_path,
         '-t', str(duration),
-        '-c:v', 'libx264', # Use x264
-        '-preset', 'slow', # Better compression efficiency
-        '-crf', '18', # High quality (visually lossless)
+        '-c:v', video_encoder,
         '-c:a', 'aac',
         '-b:a', '320k', # High quality audio
         output_path
     ]
+
+    if video_encoder == 'libx264':
+        cmd[8:8] = ['-preset', 'slow', '-crf', '18']
+    elif video_encoder == 'h264_nvenc':
+        # Good quality/size default for NVENC while keeping speed benefit.
+        cmd[8:8] = ['-preset', 'p5', '-cq', '19', '-b:v', '0']
+
+    print(f"  Encoder: {video_encoder}")
     
     try:
         subprocess.run(cmd, check=True, stderr=subprocess.DEVNULL) # Hide ffmpeg output

@@ -27,6 +27,8 @@ pip install pyinstaller
 #### Windows
 ```bash
 pyinstaller --onefile --console --name "ClipAssassin_Reels" scripts/make_reels.py
+python -m PyInstaller --onefile --console --name "ClipAssassin_Reels" scripts/make_reels.py
+
 pyinstaller --onefile --console --name "ClipAssassin_Intro" scripts/make_intro.py
 ```
 
