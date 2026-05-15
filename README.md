@@ -36,6 +36,36 @@ Before running the program, you **MUST** have **FFmpeg** installed on your syste
 *   **macOS**:
     *   Install via Homebrew: `brew install ffmpeg`
 
+### 🎛️ Encoder Policy (GPU/CPU)
+
+The app supports configurable encoder behavior via environment variables:
+
+```env
+CA_ENCODER_POLICY=auto
+CA_ENCODER_PRIORITY=h264_nvenc,h264_qsv,h264_amf,libx264
+CA_ENCODER_LOG=basic
+```
+
+Variables:
+*   `CA_ENCODER_POLICY=auto|strict_gpu|cpu_only` (default: `auto`)
+    *   `auto`: tries GPU encoders first, falls back to CPU (`libx264`) if needed.
+    *   `strict_gpu`: hardware encoder only; fails if GPU encoder is not usable.
+    *   `cpu_only`: always uses `libx264`.
+*   `CA_ENCODER_PRIORITY`: optional comma-separated override of encoder order.
+*   `CA_ENCODER_LOG=basic|debug`: debug mode prints detailed skip/fallback reasons.
+
+Platform defaults:
+*   **Windows**: `h264_nvenc,h264_qsv,h264_amf,libx264` (NVIDIA/Intel/AMD -> CPU fallback).
+*   **macOS (including Apple Silicon)**: `h264_videotoolbox,libx264`.
+*   **Linux**: `h264_vaapi,h264_nvenc,h264_qsv,h264_amf,libx264`.
+
+For Apple Silicon, ensure FFmpeg has VideoToolbox encoder support (`h264_videotoolbox`).
+
+Quick diagnostic:
+```bash
+ffmpeg -hide_banner -encoders
+```
+
 ### 🚀 How to use
 
 1.  **Run the program** (`ClipAssassin_Reels` or `ClipAssassin_Intro`).
@@ -92,6 +122,36 @@ Before running the program, you **MUST** have **FFmpeg** installed on your syste
     3.  Положите `ffmpeg.exe` **в ту же папку**, где лежит ваша программа `ClipAssassin_Reels.exe` (или добавьте его в системный PATH).
 *   **macOS**:
     *   Установите через Homebrew: `brew install ffmpeg`
+
+### 🎛️ Политика энкодера (GPU/CPU)
+
+Программа поддерживает настройку поведения энкодера через переменные окружения:
+
+```env
+CA_ENCODER_POLICY=auto
+CA_ENCODER_PRIORITY=h264_nvenc,h264_qsv,h264_amf,libx264
+CA_ENCODER_LOG=basic
+```
+
+Переменные:
+*   `CA_ENCODER_POLICY=auto|strict_gpu|cpu_only` (по умолчанию: `auto`)
+    *   `auto`: сначала пробует GPU-энкодеры, при проблемах переходит на CPU (`libx264`).
+    *   `strict_gpu`: только аппаратный энкодер; при недоступности завершает с ошибкой.
+    *   `cpu_only`: всегда использует `libx264`.
+*   `CA_ENCODER_PRIORITY`: опциональное переопределение порядка энкодеров через запятую.
+*   `CA_ENCODER_LOG=basic|debug`: `debug` показывает детальные причины пропуска/fallback.
+
+Платформенные приоритеты по умолчанию:
+*   **Windows**: `h264_nvenc,h264_qsv,h264_amf,libx264` (NVIDIA/Intel/AMD -> fallback на CPU).
+*   **macOS (включая Apple Silicon)**: `h264_videotoolbox,libx264`.
+*   **Linux**: `h264_vaapi,h264_nvenc,h264_qsv,h264_amf,libx264`.
+
+Для Apple Silicon убедитесь, что ваша сборка FFmpeg содержит поддержку VideoToolbox (`h264_videotoolbox`).
+
+Быстрая диагностика:
+```bash
+ffmpeg -hide_banner -encoders
+```
 
 ### 🚀 Как использовать
 

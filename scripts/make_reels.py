@@ -10,6 +10,8 @@ import common
 common.setup_encoding()
 
 def main():
+    common.print_encoder_strategy_banner()
+
     # Tkinter initialization removed
     # try:
     #     root = tk.Tk()
