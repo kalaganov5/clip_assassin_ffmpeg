@@ -403,8 +403,6 @@ def run_ffmpeg_cut(input_path, start, duration, output_path):
     elif video_encoder == 'h264_nvenc':
         # Good quality/size default for NVENC while keeping speed benefit.
         cmd[8:8] = ['-preset', 'p5', '-cq', '19', '-b:v', '0']
-
-    print(f"  Encoder: {video_encoder} (policy: {policy})")
     
     try:
         subprocess.run(cmd, check=True, stderr=subprocess.DEVNULL) # Hide ffmpeg output
